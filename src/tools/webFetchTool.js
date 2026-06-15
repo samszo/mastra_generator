@@ -33,7 +33,7 @@ export const webFetchTool = createTool({
       .replace(/&gt;/g, '>')
       .replace(/\s{2,}/g, ' ')
       .trim()
-      .slice(0, 12000); // keep context window manageable
+      .slice(0, 36000); // keep context window manageable
 
     return { content: text, title };
   },

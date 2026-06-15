@@ -804,6 +804,14 @@
           <td>${esc(p.year)}</td><td>${esc(p.journal)}</td><td>${esc(p.citations)}</td>`;
         tbody.appendChild(tr);
       });
+      (auth.result.notablePublications ?? []).forEach(p => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${p.url ? `<a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.title)}</a>` : esc(p.title)}</td>
+          <td>${esc(p.year)}</td><td></td><td>${esc(p.BibTeX)}</td>`;
+        tbody.appendChild(tr);
+      });
+    
 
       // Tab 3 — Prompts
       document.getElementById('prompt-ctx-system').textContent    = ctx.prompt.system;
