@@ -1,5 +1,6 @@
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
+import he from 'he';
 
 export const webFetchTool = createTool({
   id: 'web-fetch',
@@ -20,7 +21,7 @@ export const webFetchTool = createTool({
 
     // Extract title
     const titleMatch = html.match(/<title[^>]*>([^<]*)<\/title>/i);
-    const title = titleMatch ? titleMatch[1].trim() : url;
+    const title = titleMatch ? he.decode(titleMatch[1].trim()) : url;
 
     // Strip scripts, styles and HTML tags, collapse whitespace
     const text = html
@@ -35,6 +36,6 @@ export const webFetchTool = createTool({
       .trim()
       .slice(0, 36000); // keep context window manageable
 
-    return { content: text, title };
+    return { content: he.decode(text), title };
   },
 });

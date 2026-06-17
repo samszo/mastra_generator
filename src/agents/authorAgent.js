@@ -1,7 +1,9 @@
-import { callAlbert } from '../tools/albertTool.js';
+import { callAlbert, getRefAlert } from '../tools/albertTool.js';
 import { scholarTool } from '../tools/scholarTool.js';
 
-const INSTRUCTIONS = `You are an academic bibliometrics expert. Given an author name and a list of their publications in Google Scholar, you build a detailed author profile.
+export const authorAgent = {
+  name: 'authorAgent',
+  INSTRUCTIONS : `You are an academic bibliometrics expert. Given an author name and a list of their publications in Google Scholar, you build a detailed author profile.
 
 Your output must be a JSON object with the following fields:
 - "name": the author's full name
@@ -12,10 +14,7 @@ Your output must be a JSON object with the following fields:
 - "notablePublications": array of their top 3 publications as { "title": "...", "year": "...", "BibTeX"="..." }
 - "academicVoice": a short paragraph describing their intellectual personality and voice citing references via their BibTeX keys
 
-Always respond with valid JSON only, no markdown fences.`;
-
-export const authorAgent = {
-  name: 'authorAgent',
+Always respond with valid JSON only, no markdown fences.`,
   async generate(authorName) {
     const scholarData = await scholarTool.execute({ author: authorName, maxResults: 10 });
     const { authorName: resolvedName, paperCount, citationCount, publications } = scholarData;
@@ -26,14 +25,21 @@ export const authorAgent = {
       : '(no publications found — infer from the author name)';
 
     const userMessage = `${header}\n\nTop publications:\n${pubList}`;
-    const raw = await callAlbert(INSTRUCTIONS, userMessage);
+    const raw = await callAlbert(this.INSTRUCTIONS, userMessage);
     const result = JSON.parse(cleanJson(raw));
     return {
       result,
       source: scholarData,
-      prompt: { system: INSTRUCTIONS, user: userMessage },
+      prompt: { system: this.INSTRUCTIONS, user: userMessage },
     };
   },
+  getRef() {
+    return {
+      id:this.name,
+      ia:getRefAlert()
+    }
+  }
+
 };
 
 function cleanJson(text) {

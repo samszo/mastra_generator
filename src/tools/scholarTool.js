@@ -25,6 +25,18 @@ async function fetchWithRetry(url, options = {}, { retries = 4, baseDelayMs = 20
   }
 }
 
+/**
+ * renvoie les références du service
+ */
+export function getRefScholar() {
+  return {
+    name: 'semantic-scholar-search',
+    code: 'https://github.com/samszo/generator_expertise/blob/main/src/tools/scholarTool.js',
+    baseURL: SS_BASE,
+  };
+}
+
+
 export const scholarTool = createTool({
   id: 'semantic-scholar-search',
   description: 'Searches Semantic Scholar for publications by a given author name and returns their profile and top papers',

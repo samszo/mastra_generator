@@ -1,7 +1,9 @@
-import { callAlbert } from '../tools/albertTool.js';
+import { callAlbert, getRefAlert } from '../tools/albertTool.js';
 import { scanrPersonTool } from '../tools/scanrPersonTool.js';
 
-const INSTRUCTIONS = `You are an expert in French academic research. Given raw scanR data for an author, extract and summarize their academic profile.
+export const scanrPersonAgent = {
+  name: 'scanrPersonAgent',
+  INSTRUCTIONS : `You are an expert in French academic research. Given raw scanR data for an author, extract and summarize their academic profile.
 
 Your output must be a JSON object with the following fields:
 - "id": the scanR identifier (e.g. "idref/123456")
@@ -16,10 +18,7 @@ Your output must be a JSON object with the following fields:
 - "notablePublications": array of their top 10 publications as { "title": "...", "year": "...", "BibTeX"="..." }
 - "academicVoice": a short paragraph describing their intellectual personality and voice citing references via their BibTeX keys
 
-Always respond with valid JSON only, no markdown fences.`;
-
-export const scanrPersonAgent = {
-  name: 'scanrPersonAgent',
+Always respond with valid JSON only, no markdown fences.`,
   async generate(authorName) {
     const scanrData = await scanrPersonTool.execute({ name: authorName, limit: 3 });
 
@@ -27,7 +26,7 @@ export const scanrPersonAgent = {
       return {
         result: null,
         source: scanrData,
-        prompt: { system: INSTRUCTIONS, user: `Author: ${authorName}` },
+        prompt: { system: this.INSTRUCTIONS, user: `Author: ${authorName}` },
         error: `No scanR record found for "${authorName}"`,
       };
     }
@@ -37,7 +36,7 @@ export const scanrPersonAgent = {
     const dataStr = JSON.stringify(person.data ?? {}, null, 2);
     const userMessage = `scanR record for "${person.fullName}" (id: ${person.id}):\n\n${dataStr}`;
 
-    const raw = await callAlbert(INSTRUCTIONS, userMessage);
+    const raw = await callAlbert(this.INSTRUCTIONS, userMessage);
     const result = JSON.parse(cleanJson(raw));
 
     return {
@@ -46,6 +45,21 @@ export const scanrPersonAgent = {
       prompt: { system: INSTRUCTIONS, user: userMessage },
     };
   },
+  async getRef(omk) {
+
+    let ia = getRefAlert(),
+      title = this.name+' ['+ia.name+']'+' ['+ia.model+']',
+      dtOmk = {'rt':'agent','c':'dcterms:Agent',
+          'dt':{"dcterms:type":ia.model,
+              "dcterms:description":this.instructions,
+              "dcterms:title":title,
+              "jdc:hasCrible":{"model":ia.model,"max_tokens":4096,"temperature":0.3},
+          },
+          'verif':{"dcterms:title":title},
+          'index':title
+        };
+    return omk.getCreateItem(dtOmk);
+  }
 };
 
 function cleanJson(text) {

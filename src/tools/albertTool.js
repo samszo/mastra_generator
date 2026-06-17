@@ -24,6 +24,17 @@ export async function callAlbert(systemPrompt, userMessage) {
 }
 
 /**
+ * renvoie les références du service
+ */
+export function getRefAlert() {
+  return {
+    name: 'Albert IA API',
+    model: process.env.ALBERT_MODEL,
+    baseURL: process.env.ALBERT_BASE_URL,
+  };
+}
+
+/**
  * Mastra tool wrapping the Albert AI service.
  * Can be registered in the Mastra instance or used inside workflow steps.
  */
